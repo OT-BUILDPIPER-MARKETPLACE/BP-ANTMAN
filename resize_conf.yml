@@ -1,0 +1,7 @@
+modification:
+  allocatedStorage: 50
+  dbInstanceClass: "db.t2.micro"
+
+tags:
+  "Key": "owner"
+  "Value": "opstree"
