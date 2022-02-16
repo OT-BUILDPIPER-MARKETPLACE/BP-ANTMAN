@@ -2,6 +2,9 @@ modification:
   allocatedStorage: 50
   dbInstanceClass: "db.t2.micro"
 
+redisModification:
+  CacheNodeType: "cache.t2.medium"
+
 tags:
   "Key": "owner"
   "Value": "opstree"

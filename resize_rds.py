@@ -65,6 +65,29 @@ def rds_db_modification(modification):
             logging.info(f'Modification of {db} is failed')
 
 
+#function for resize the redis
+def resize_redis(modification):
+    client = boto3.client("elasticache")
+    redis = client.describe_replication_groups()
+    clustername = []
+
+    for i in redis['ReplicationGroups']:
+        taglist = client.list_tags_for_resource(ResourceName=i['ARN'])
+        for tag in taglist['TagList']:
+            if modification['tags'] == tag:
+                clustername.append(i['ReplicationGroupId'])
+                logging.info('{} redis is found based on the tags {}'.format(i['ReplicationGroupId'],tag))
+
+    new = modification['redisModification']
+    for redis in clustername:
+        response = client.modify_replication_group(
+        ReplicationGroupId=redis,
+        ApplyImmediately=True, 
+        CacheNodeType=new['CacheNodeType']
+        )
+        logging.info(f'Modification of {redis} redis done.')
+
+
 # Check the property file
 def _getProperty(property_file_path):
 
@@ -88,4 +111,5 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     args = parser.parse_args()
     file = _getProperty(CONF_PATH_ENV_KEY)
-    rds_db_modification(file)
+    # rds_db_modification(file)
+    resize_redis(file)
