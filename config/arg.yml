@@ -6,19 +6,19 @@ services:
   rds:
     resize_params:
         allocatedStorage: 70
-        dbInstanceClass: "db.t2.medium"
+        dbInstanceClass: "db.t2.micro"
     tags:
        "Key": "owner"
        "Value": "opstree"
 
   redis:
     resize_params:
-        cacheNodeType: "cache.t2.micro"
+        cacheNodeType: "cache.t2.medium"
     tags:
        "Key": "owner"
        "Value": "opstree"
 
-  ecd2:
+  ec2:
     resize_params:
       instance_type: t3.medium
 

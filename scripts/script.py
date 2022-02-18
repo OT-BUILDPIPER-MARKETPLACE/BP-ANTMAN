@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-
+try:
+    import configparser
+except:
+    from six.moves import configparser
 from ctypes import resize
 import sys, os, argparse, logging, yaml, json
 import json_log_formatter
@@ -10,6 +13,7 @@ SCRIPT_PATH = pathlib.Path(__file__).parent.resolve()
 sys.path.insert(1, f'{SCRIPT_PATH}/../lib')
 import load_yaml_config
 from otawslibs import generate_aws_session , aws_resource_tag_factory , aws_ec2_actions_factory , aws_rds_actions_factory
+
 
 SCHEULE_ACTION_ENV_KEY = "SCHEDULE_ACTION"
 CONF_PATH_ENV_KEY = "CONF_PATH"
@@ -47,8 +51,6 @@ def fetch_instance(service,region,tags):
     return instances_id      
 
 def fetch_rds_db_instance(service,region,tags):
-    # print(region,tags)
-    # print(region[0], tags)
     client = boto3.client(service, region_name=region[0])
     resource = client.describe_db_instances()
     databases = []
@@ -59,11 +61,8 @@ def fetch_rds_db_instance(service,region,tags):
 
 def rds_db_modification(service,region,tags,properties):
     databases = fetch_rds_db_instance(service,region,tags)
-    # print(databases)
-    # modification = _getProperty(CONF_PATH_ENV_KEY)
     client = boto3.client(service,region_name=region[0])
     logging.info(f'Start modifying the databases.....')
-    # print(properties['services']['rds']['resize_params']['allocatedStorage'])
     for db in databases:
         try:
             response = client.modify_db_instance(
@@ -92,7 +91,6 @@ def fetch_redis_cluster(service,region,tags):
 def resize_redis(service,region,tags,properties):
     client = boto3.client(service, region_name=region[0])
     clustername = fetch_redis_cluster(service,properties['region'],tags)
-   # new = modification['redisModification']
     for redis in clustername:
         response = client.modify_replication_group(
         ReplicationGroupId=redis,
@@ -114,61 +112,21 @@ def _scheduleFactory(properties, aws_profile, args):
             session = generate_aws_session._create_session()
 
         LOGGER.info(f'Connection to AWS established.')
-        # services = properties['services']
-        # print(services.keys())
         for property in properties['services']:
-            # print(properties['services'])
-            # print(property)
-            if property == "ec2":
-                
+            if property == "ec2": 
                 LOGGER.info(f'Reading ec2 tags')
-                # print(properties['services']['ec2'])
                 for tag in properties['services']['ec2']:
                     if tag == "tags":
                         ec2_tags = properties['services']['ec2']['tags']
                     else:
                         ec2_tags = properties['tags']
-                    # print(ec2_tags)
-                
-                
+                          
                 if ec2_tags:
 
                     LOGGER.info(f'Found Ec2 tags details for filtering : {ec2_tags}')
-
-                    
-                    # ec2_client = session.client("ec2", region_name=properties['region'])
-                    # aws_ec2_action = aws_ec2_actions_factory.awsEC2Actions(ec2_client)
-
-    
                     LOGGER.info(f'Scanning AWS EC2 resources in {properties["region"]} region based on tags {ec2_tags} provided')
                     instances = fetch_instance('ec2',properties['region'],ec2_tags)
-                    # print(instances)
-
-    #                 instance_ids = _fetch_instance_ids(ec2_client, "ec2", ec2_tags)
-
-    #                 if instance_ids:
-
-    #                     LOGGER.info(f'Found AWS EC2 resources {instance_ids} in  {properties["region"]} region based on tags provided: {ec2_tags}',extra={"ec2_ids": instance_ids})
-
-    #                     if os.environ[SCHEULE_ACTION_ENV_KEY] == "start":
-                            
-    #                         aws_ec2_action._ec2_perform_action(instance_ids,action="start")
-
-    #                     elif os.environ[SCHEULE_ACTION_ENV_KEY] == "stop":
-
-    #                         aws_ec2_action._ec2_perform_action(instance_ids,action="stop")
-
-    #                     else:
-    #                         logging.error(f"{SCHEULE_ACTION_ENV_KEY} env not set")
-
-    #                 else:
-    #                     LOGGER.warning(f'No Ec2 instances found on the basis of tag filters provided in conf file in region {properties["region"]} ',extra={"ec2_ids": instance_ids})
-    #             else:
-    #                 LOGGER.warning(f'Found ec2_tags key in config file but no Ec2 tags details mentioned for filtering',extra={"ec2_ids": instance_ids})
-
-               
-
-                
+             
             elif property == "rds":
 
                 LOGGER.info(f'Reading RDS tags')
@@ -181,7 +139,6 @@ def _scheduleFactory(properties, aws_profile, args):
                 if rds_tags:
 
                     LOGGER.info(f'Found RDS tags details for filtering : {rds_tags}')
-                    # print(str(properties['region']))
 
                     LOGGER.info(f'Scanning AWS RDS resources in {properties["region"]} region based on tags {rds_tags} provided')
                     databases = fetch_rds_db_instance('rds',properties['region'],rds_tags)
@@ -215,10 +172,8 @@ def _scheduleFactory(properties, aws_profile, args):
                 if redis_tags:
 
                     LOGGER.info(f'Found Redis tags details for filtering : {redis_tags}')
-                    # print(str(properties['region']))
 
                     LOGGER.info(f'Scanning redis resources in {properties["region"]} region based on tags {redis_tags} provided')
-                    # databases = fetch_rds_db_instance('rds',properties['region'],redis_tags)
                     clustername = fetch_redis_cluster('elasticache',properties['region'],redis_tags)
 
                     if clustername:
@@ -227,7 +182,6 @@ def _scheduleFactory(properties, aws_profile, args):
 
                         if os.environ[SCHEULE_ACTION_ENV_KEY] == "resize":
 
-                            # rds_db_modification('rds',properties['region'],redis_tags,properties)      
                             resize_redis('elasticache',properties['region'],redis_tags,properties)                      
 
                         else:
@@ -242,7 +196,6 @@ def _scheduleFactory(properties, aws_profile, args):
                 LOGGER.info("Scanning AWS service details in config")
                 
                 
-            
 
     except ClientError as e:
         if "An error occurred (AuthFailure)" in str(e):
@@ -277,6 +230,5 @@ if __name__ == "__main__":
     args = parser.parse_args()
     _scheduleResources(args)
 
-    # print(args)
 
 

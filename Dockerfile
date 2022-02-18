@@ -10,7 +10,7 @@ RUN apt-get update && \
 RUN mkdir -p /ot/logs /ot/config && \
     pip3 install --no-cache --upgrade -r requirements.txt
 
-RUN pyinstaller --paths=lib scripts/schedule_resources.py --onefile
+RUN pyinstaller --paths=lib scripts/script.py --onefile
 
 
 FROM gcr.io/distroless/python3-debian11 AS deployer
@@ -19,6 +19,6 @@ COPY --from=builder /ot /ot
 
 WORKDIR /ot
 
-COPY --from=builder /opt/dist/schedule_resources .
+COPY --from=builder /opt/dist/script .
 
-ENTRYPOINT ["./schedule_resources"]
+ENTRYPOINT ["./script"]
