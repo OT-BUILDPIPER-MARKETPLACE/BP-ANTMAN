@@ -13,11 +13,7 @@ RUN mkdir -p /ot/logs /ot/config && \
 RUN pyinstaller --paths=lib scripts/script.py --onefile
 
 
-FROM gcr.io/distroless/python3-debian11 AS deployer
-
-COPY --from=builder /ot /ot
-
-WORKDIR /ot
+FROM opstree/python3-distroless:1.0
 
 COPY --from=builder /opt/dist/script .
 
