@@ -1,8 +1,8 @@
-<img src="images/iceman.jpg" width="200">
+<img src="images/antman.jpg" width="200">
 
-# BP-ICEMAN 
+# BP-ANTMAN 
 
-As **ICEMAN** has capability to freeze objects, similarly I'll help to freeze/unfreeze AWS resources by resizing it based on user-defined tags and user-defined actions.
+As **ANTMAN** has capability to resize, similarly I'll help to resize the AWS resources based on user-defined tags and user-defined actions.
 
 ## SERVICES SUPPORTED
 - REDIS
