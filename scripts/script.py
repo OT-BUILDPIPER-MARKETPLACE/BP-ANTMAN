@@ -100,7 +100,7 @@ def _awsResourceManagerFactory(properties, aws_profile, args):
 
                         if os.environ[SCHEULE_ACTION_ENV_KEY] == "resize":
 
-                            resize_rds(properties,databases,redis_client)                            
+                            resize_rds(properties,databases,rds_client)                            
 
                         else:
                             logging.error(f"{SCHEULE_ACTION_ENV_KEY} env not set")
